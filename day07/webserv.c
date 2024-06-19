@@ -13,7 +13,7 @@ char webpage[] = "HTTP/1.1 200 OK\r\n"
     "<html><head><title> My Web Page </title>\r\n"
     "<style>body {background-color: #FFFF00}</style></head>\r\n"
     "<body><center><h1>Hello World</h1><br>\r\n"
-    "<img src=\"game.jpg\"></center></body></html>\r\n";
+    "<img src=\"cat.jpg\"></center></body></html>\r\n";
 
 char* readImageFile(const char* filename, size_t* file_size) {
     FILE* file = fopen(filename, "rb");
@@ -44,7 +44,7 @@ char* readImageFile(const char* filename, size_t* file_size) {
     return content;
 }
 
-int main() {
+int main(int argc,char *argv[]) {
     // 웹 서버 설정
     int server_socket, client_socket;
     struct sockaddr_in server_addr, client_addr;
@@ -58,7 +58,7 @@ int main() {
 
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = INADDR_ANY;
-    server_addr.sin_port = htons(8080);
+    server_addr.sin_port = htons(atoi(argv[1]));
 
     if (bind(server_socket, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
         perror("Failed to bind");
@@ -70,7 +70,7 @@ int main() {
         return 1;
     }
 
-    printf("Web server started. Listening on port 8080...\n");
+    printf("Web server started.\n");
 
     // 클라이언트 요청 처리
     while (1) {
@@ -84,7 +84,7 @@ int main() {
         memset(buffer, 0, BUFFER_SIZE);
 
         // 클라이언트로부터 HTTP 요청 메시지 수신
-                ssize_t bytes_read = recv(client_socket, buffer, BUFFER_SIZE - 1, 0);
+        ssize_t bytes_read = recv(client_socket, buffer, BUFFER_SIZE - 1, 0);
         if (bytes_read < 0) {
             perror("Failed to receive client request");
             close(client_socket);
@@ -100,10 +100,10 @@ int main() {
         if (strcmp(path, "/") == 0) {
             // HTTP 응답 메시지 전송
             send(client_socket, webpage, strlen(webpage), 0);
-        } else if (strcmp(path, "/game.jpg") == 0) {
+        } else if (strcmp(path, "/cat.jpg") == 0) {
             // game.jpg 파일 읽기
             size_t image_size;
-            char* image_content = readImageFile("game.jpg", &image_size);
+            char* image_content = readImageFile("cat.jpg", &image_size);
             if (!image_content) {
                 const char* response = "HTTP/1.1 500 Internal Server Error\r\n\r\n";
                 send(client_socket, response, strlen(response), 0);
